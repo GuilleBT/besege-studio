@@ -32,6 +32,7 @@ export const App: React.FC = () => {
       smoothWheel: true,
     });
     lenisRef.current = lenis;
+    (window as any).lenis = lenis;
 
     // If cover is active on initial load, stop scroll to avoid desync
     if (showCover) {
