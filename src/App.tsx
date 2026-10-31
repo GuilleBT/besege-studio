@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Lenis from 'lenis';
 import { CustomCursor } from './components/CustomCursor';
 import { DimensionalBackground } from './components/DimensionalBackground';
+import { PrehomeIntro } from './components/PrehomeIntro';
 import { MuseumNavbar } from './components/MuseumNavbar';
 import { PortalEntrance } from './components/PortalEntrance';
 import { ManifestoSection } from './components/ManifestoSection';
@@ -15,6 +16,7 @@ import { MuseumFooter } from './components/MuseumFooter';
 import { Artwork } from './data/museumData';
 
 export const App: React.FC = () => {
+  const [showPrehome, setShowPrehome] = useState<boolean>(true);
   const [activeRoom, setActiveRoom] = useState<string>('atrio');
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [inquirySubject, setInquirySubject] = useState<string>('');
@@ -78,6 +80,11 @@ export const App: React.FC = () => {
 
       {/* Paper Grain Overlay for physical museum texture */}
       <div className="paper-grain" />
+
+      {/* Spectacular Pre-Home Cinematic Intro */}
+      {showPrehome && (
+        <PrehomeIntro onEnter={() => setShowPrehome(false)} />
+      )}
 
       {/* High-Agency Custom Magnetic Cursor */}
       <CustomCursor />
