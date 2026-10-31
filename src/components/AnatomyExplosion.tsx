@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
-import { Sparkles, Layers, Shield, Gem, Compass } from 'lucide-react';
+import { Sparkles, Layers, Gem, Compass, Check } from 'lucide-react';
 import { museumAudio } from '../utils/audio';
 
 export const AnatomyExplosion: React.FC = () => {
@@ -13,33 +13,38 @@ export const AnatomyExplosion: React.FC = () => {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    damping: 25,
-    stiffness: 180,
+    damping: 24,
+    stiffness: 160,
     mass: 0.8,
   });
 
-  // Layer 3D Spatial Offsets driven by scroll scrubbing
-  // Layer 1: Skin Canvas (Behind)
-  const layer1Z = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, -180, 0]);
-  const layer1X = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, -220, 0]);
-  const layer1RotateY = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, -18, 0]);
-  const layer1Opacity = useTransform(smoothProgress, [0, 0.15, 0.85, 1], [0.6, 1, 1, 0.8]);
+  // Layer separation:
+  // Layer 1 (Skin Canvas): glides to the LEFT with 3D tilt
+  const layer1X = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, -280, -320, 0]);
+  const layer1RotateY = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, 16, 16, 0]);
+  const layer1Scale = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [1, 0.95, 0.95, 1]);
+  const layer1Opacity = useTransform(smoothProgress, [0, 0.12, 0.85, 0.98], [0.6, 1, 1, 0.4]);
 
-  // Layer 2: Suspended Silk Drape (Middle)
-  const layer2Z = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, 60, 0]);
-  const layer2Y = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, -80, 0]);
-  const layer2RotateX = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, 12, 0]);
+  // Layer 2 (Pleated Silk Drape): stays CENTER, floats slightly up
+  const layer2Y = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, -30, -30, 0]);
+  const layer2Scale = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [1, 1.05, 1.05, 1]);
+  const layer2RotateX = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, -8, -8, 0]);
 
-  // Layer 3: Body Jewelry & Golden Chains (Forefront)
-  const layer3Z = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, 240, 0]);
-  const layer3X = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, 220, 0]);
-  const layer3RotateY = useTransform(smoothProgress, [0.1, 0.5, 0.85], [0, 20, 0]);
+  // Layer 3 (Body Jewelry & Gold Chains): glides to the RIGHT with 3D tilt
+  const layer3X = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, 280, 320, 0]);
+  const layer3RotateY = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [0, -16, -16, 0]);
+  const layer3Scale = useTransform(smoothProgress, [0.08, 0.45, 0.82, 0.96], [1, 0.95, 0.95, 1]);
+  const layer3Opacity = useTransform(smoothProgress, [0, 0.12, 0.85, 0.98], [0.6, 1, 1, 0.4]);
 
-  // Dynamic Layer Stage Text
-  const stageOpacity1 = useTransform(smoothProgress, [0.05, 0.25, 0.4], [0, 1, 0]);
-  const stageOpacity2 = useTransform(smoothProgress, [0.35, 0.55, 0.7], [0, 1, 0]);
-  const stageOpacity3 = useTransform(smoothProgress, [0.65, 0.85, 0.98], [0, 1, 0]);
-  const stageOpacity4 = useTransform(smoothProgress, [0.85, 0.95, 1], [0, 1, 1]);
+  // Final Unified Living Sculpture overlay (Appears when layers converge at scroll end)
+  const unifiedOpacity = useTransform(smoothProgress, [0.86, 0.98], [0, 1]);
+  const unifiedScale = useTransform(smoothProgress, [0.86, 0.98], [0.92, 1]);
+
+  // Dynamic status text
+  const stepLabel1 = useTransform(smoothProgress, [0.05, 0.35], [0, 1]);
+  const stepLabel2 = useTransform(smoothProgress, [0.35, 0.65], [0, 1]);
+  const stepLabel3 = useTransform(smoothProgress, [0.65, 0.85], [0, 1]);
+  const stepLabel4 = useTransform(smoothProgress, [0.85, 1], [0, 1]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -52,196 +57,211 @@ export const AnatomyExplosion: React.FC = () => {
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative w-full h-[280vh] bg-besege-canvas-subtle/40 border-t border-b border-besege-black/5"
+      className="relative w-full h-[320vh] bg-besege-canvas-subtle/50 border-t border-b border-besege-black/5"
     >
-      {/* Pinned 3D Laboratory Showcase */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-6 sm:p-12 [perspective:1400px]">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
+      {/* Pinned Sticky Stage - Locked to the Center of the Viewport */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-4 sm:p-8 md:p-12 [perspective:1400px]">
+        {/* Curatorial Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20 max-w-7xl mx-auto w-full">
           <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-besege-violet tracking-widest uppercase">
+            <div className="flex items-center gap-2 text-xs font-mono text-besege-violet tracking-widest uppercase mb-1">
               <span className="w-1.5 h-1.5 rounded-full bg-besege-violet" />
-              <span>Deconstrucción 3D · Sala 01</span>
+              <span>Sala 01 · Estudio Anatómico</span>
             </div>
             <h3 className="font-display font-bold text-2xl sm:text-4xl text-besege-black">
-              Anatomía en Capas: El Cuerpo como Soporte
+              Deconstrucción Espacial de la Prenda
             </h3>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs text-besege-muted bg-white/80 px-4 py-2 rounded-full border border-besege-black/5 shadow-sm">
+          <div className="flex items-center gap-2 font-mono text-xs text-besege-muted bg-white/85 px-4 py-2 rounded-full border border-besege-black/5 shadow-sm">
             <Layers size={14} className="text-besege-violet" />
-            <span>Haz scroll para separar las capas en el espacio</span>
+            <span>Haz scroll para separar las 3 capas en el espacio</span>
           </div>
         </div>
 
-        {/* Central 3D Exploded Stage */}
-        <div className="relative flex-1 flex items-center justify-center [transform-style:preserve-3d]">
-          {/* Dynamic 3D Rig controlled by scroll and mouse tilt */}
+        {/* Central 3D Exploded Stage - Perfectly Centered */}
+        <div className="relative flex-1 w-full flex items-center justify-center [transform-style:preserve-3d]">
           <motion.div
             style={{
-              rotateY: mousePos.x * 25,
-              rotateX: -mousePos.y * 20,
+              rotateY: mousePos.x * 16,
+              rotateX: -mousePos.y * 12,
             }}
-            className="relative w-72 sm:w-96 md:w-[28rem] aspect-[4/5] [transform-style:preserve-3d] transition-transform duration-200 ease-out"
+            className="relative flex items-center justify-center w-full max-w-5xl h-[52vh] sm:h-[58vh] [transform-style:preserve-3d] transition-transform duration-200 ease-out"
           >
-            {/* Layer 1: The Human Canvas / Skin Backdrop */}
+            {/* LAYER 1: El Lienzo Humano (La Piel & Clavícula) - Moves Left */}
             <motion.div
               style={{
-                translateZ: layer1Z,
-                translateX: layer1X,
+                x: layer1X,
                 rotateY: layer1RotateY,
+                scale: layer1Scale,
                 opacity: layer1Opacity,
               }}
-              className="absolute inset-0 rounded-3xl bg-amber-50/90 border border-besege-gold/40 shadow-2xl p-5 flex flex-col justify-between backdrop-blur-sm [backface-visibility:hidden]"
+              className="absolute z-10 w-[72vw] sm:w-[320px] md:w-[360px] h-full rounded-3xl bg-white border border-besege-gold/40 shadow-2xl p-4 flex flex-col justify-between backdrop-blur-md"
             >
-              <div className="flex items-center justify-between border-b border-besege-gold/30 pb-2">
+              <div className="flex items-center justify-between border-b border-besege-gold/20 pb-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-besege-gold font-bold">
-                  Capa I · El Lienzo Anatómico
+                  Capa I · Piel
                 </span>
                 <Compass size={14} className="text-besege-gold" />
               </div>
 
-              <div className="flex-1 flex flex-col justify-center items-center text-center px-4 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-besege-gold/10 flex items-center justify-center text-besege-gold font-serif text-2xl italic">
-                  I
+              <div className="relative flex-1 my-2 rounded-2xl overflow-hidden bg-amber-50/60 border border-besege-gold/20 flex flex-col justify-between p-4">
+                <div className="w-10 h-10 rounded-full bg-besege-gold/15 text-besege-gold flex items-center justify-center font-serif text-lg font-bold">
+                  01
                 </div>
-                <h4 className="font-serif italic text-2xl text-besege-black">
-                  La Piel Desnuda
-                </h4>
-                <p className="font-sans text-xs text-besege-charcoal/80 leading-relaxed">
-                  El torso, la clavícula y las curvas de la cadera no son limitaciones a corregir, sino el pedestal sobre el que descansa la creación.
-                </p>
+                <div className="space-y-1">
+                  <h4 className="font-serif italic text-xl text-besege-black">
+                    El Lienzo Anatómico
+                  </h4>
+                  <p className="font-sans text-xs text-besege-charcoal/80 leading-relaxed">
+                    La clavícula y el torso no son siluetas a encorsetar, sino el territorio sagrado donde se posa la pieza.
+                  </p>
+                </div>
+                <div className="font-mono text-[9px] text-besege-gold uppercase tracking-wider">
+                  Soporte Humano · Sin Corsé
+                </div>
               </div>
 
               <div className="font-mono text-[9px] text-besege-muted text-right">
-                Base Estructural · Grado en Diseño UDIT
+                TFG UDIT Moda
               </div>
             </motion.div>
 
-            {/* Layer 2: Suspended Silk & Pleats */}
+            {/* LAYER 2: El Tejido Ingrávido (Seda & Plisados) - Stays Center */}
             <motion.div
               style={{
-                translateZ: layer2Z,
-                translateY: layer2Y,
+                y: layer2Y,
+                scale: layer2Scale,
                 rotateX: layer2RotateX,
               }}
-              className="absolute inset-0 rounded-3xl bg-white/90 border border-besege-violet/30 shadow-2xl p-5 flex flex-col justify-between backdrop-blur-md [backface-visibility:hidden]"
+              className="absolute z-20 w-[75vw] sm:w-[340px] md:w-[380px] h-full rounded-3xl bg-white border border-besege-violet/40 shadow-2xl p-4 flex flex-col justify-between backdrop-blur-md"
             >
               <div className="flex items-center justify-between border-b border-besege-violet/20 pb-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-besege-violet font-bold">
-                  Capa II · El Tejido Ingrávido
+                  Capa II · Tejido
                 </span>
                 <Layers size={14} className="text-besege-violet" />
               </div>
 
-              <div className="flex-1 flex flex-col justify-center items-center text-center px-4 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-besege-violet/10 flex items-center justify-center text-besege-violet font-serif text-2xl italic">
-                  II
+              <div className="relative flex-1 my-2 rounded-2xl overflow-hidden bg-besege-canvas border border-besege-black/5">
+                <img
+                  src="/assets/art-look-gold-bandeau.png"
+                  alt="Tejido plisado y seda"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-besege-black/75 via-transparent to-transparent flex flex-col justify-end p-4 text-white">
+                  <span className="font-serif italic text-lg sm:text-xl font-light">
+                    Plisados en Tensión Libre
+                  </span>
+                  <span className="font-mono text-[10px] text-white/80">
+                    Seda satén cruda & muselina diagonal
+                  </span>
                 </div>
-                <h4 className="font-serif italic text-2xl text-besege-black">
-                  Plisados en Tensión Libre
-                </h4>
-                <p className="font-sans text-xs text-besege-charcoal/80 leading-relaxed">
-                  Muselinas y satenes cortados al bies. Las telas caen por pura gravedad y movimiento natural, sin corsetería rígida ni patrones opresivos.
-                </p>
               </div>
 
               <div className="font-mono text-[9px] text-besege-muted text-right">
-                Seda Satén Cruda & Muselina
+                Confección Artesanal
               </div>
             </motion.div>
 
-            {/* Layer 3: Body Jewelry & Golden Chains */}
+            {/* LAYER 3: La Orfebrería Corporal (Cadenas & Encaje) - Moves Right */}
             <motion.div
               style={{
-                translateZ: layer3Z,
-                translateX: layer3X,
+                x: layer3X,
                 rotateY: layer3RotateY,
+                scale: layer3Scale,
+                opacity: layer3Opacity,
               }}
-              className="absolute inset-0 rounded-3xl bg-besege-charcoal/95 text-white border border-besege-gold shadow-2xl p-5 flex flex-col justify-between backdrop-blur-md [backface-visibility:hidden]"
+              className="absolute z-15 w-[72vw] sm:w-[320px] md:w-[360px] h-full rounded-3xl bg-white border border-besege-black/20 shadow-2xl p-4 flex flex-col justify-between backdrop-blur-md"
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-besege-gold font-bold">
-                  Capa III · Orfebrería Corporal
+              <div className="flex items-center justify-between border-b border-besege-black/10 pb-2">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-besege-black font-bold">
+                  Capa III · Orfebrería
                 </span>
-                <Gem size={14} className="text-besege-gold" />
+                <Gem size={14} className="text-besege-violet" />
               </div>
 
-              <div className="flex-1 flex flex-col justify-center items-center text-center px-4 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-besege-gold/20 flex items-center justify-center text-besege-gold font-serif text-2xl italic">
-                  III
+              <div className="relative flex-1 my-2 rounded-2xl overflow-hidden bg-besege-canvas border border-besege-black/5">
+                <img
+                  src="/assets/art-gold-black-embroidery.png"
+                  alt="Orfebrería corporal y encaje de oro"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-besege-black/80 via-transparent to-transparent flex flex-col justify-end p-4 text-white">
+                  <span className="font-serif italic text-lg font-light">
+                    Cadenas & Encaje de Oro
+                  </span>
+                  <span className="font-mono text-[10px] text-besege-gold-light">
+                    Fornitura de latón & perlas de agua dulce
+                  </span>
                 </div>
-                <h4 className="font-serif italic text-2xl text-besege-gold-light">
-                  Cadenas & Perlas Barrocas
-                </h4>
-                <p className="font-sans text-xs text-white/80 leading-relaxed">
-                  La joyería deja de ser accesorio secundario y se convierte en el esqueleto estructural que suspende y une las prendas a través de la piel.
-                </p>
               </div>
 
-              <div className="font-mono text-[9px] text-besege-gold/70 text-right">
-                Latón Bañado & Perlas de Agua Dulce
+              <div className="font-mono text-[9px] text-besege-muted text-right">
+                Joyería sobre Piel
               </div>
             </motion.div>
 
-            {/* Central Living Artifact Image (Shown on complete scrub convergence) */}
+            {/* CONVERGENCE OVERLAY: The Complete Living Sculpture */}
             <motion.div
               style={{
-                opacity: useTransform(smoothProgress, [0.75, 0.95], [0, 1]),
-                scale: useTransform(smoothProgress, [0.75, 0.95], [0.85, 1]),
+                opacity: unifiedOpacity,
+                scale: unifiedScale,
               }}
-              className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl border-2 border-besege-violet z-40 bg-black"
+              className="absolute z-30 w-[78vw] sm:w-[380px] md:w-[420px] h-full rounded-3xl overflow-hidden shadow-2xl border-2 border-besege-violet bg-white p-3 pointer-events-none"
             >
-              <img
-                src="/assets/art-look-tfg-collection.png"
-                alt="BESEGÉ TFG Escultura Viva"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-                <span className="font-mono text-[10px] text-besege-violet-light uppercase tracking-widest">
-                  Convergencia Total · Obra Viva
-                </span>
-                <span className="font-serif italic text-xl">
-                  Aura Drapeada & Cadenas Áureas
-                </span>
+              <div className="relative w-full h-full rounded-2xl overflow-hidden">
+                <img
+                  src="/assets/art-look-tfg-collection.png"
+                  alt="Convergencia: Escultura Viva Completa"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-besege-black/90 via-black/20 to-transparent flex flex-col justify-end p-5 text-white">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-besege-violet text-white font-mono text-[10px] uppercase tracking-widest font-semibold w-fit mb-2">
+                    <Sparkles size={11} />
+                    <span>Convergencia Total</span>
+                  </span>
+                  <h4 className="font-serif italic text-2xl">
+                    La Obra Viva: Piel, Seda & Joya
+                  </h4>
+                  <p className="font-mono text-[11px] text-white/80">
+                    La prenda deja de ser objeto y se convierte en adorno sagrado.
+                  </p>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Dynamic Stage Callouts at the bottom */}
-        <div className="relative h-14 flex items-center justify-center text-center font-mono text-xs z-20">
-          <motion.div
-            style={{ opacity: stageOpacity1 }}
-            className="absolute flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 border border-besege-black/10 shadow-sm"
-          >
-            <span className="w-2 h-2 rounded-full bg-besege-gold" />
-            <span>Fase 01: El cuerpo humano desnudo como lienzo soberano</span>
-          </motion.div>
+        {/* Bottom Stage Progress Indicator */}
+        <div className="relative z-20 max-w-7xl mx-auto w-full pt-3 border-t border-besege-black/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-besege-muted">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 font-semibold text-besege-black">
+              <span className="w-2 h-2 rounded-full bg-besege-violet" />
+              <span>Estudio en 3 Fases:</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-white border border-besege-black/10 text-[10px]">
+                01. Piel
+              </span>
+              <span>→</span>
+              <span className="px-2 py-0.5 rounded-full bg-white border border-besege-black/10 text-[10px]">
+                02. Seda
+              </span>
+              <span>→</span>
+              <span className="px-2 py-0.5 rounded-full bg-white border border-besege-black/10 text-[10px]">
+                03. Joyas
+              </span>
+              <span>→</span>
+              <span className="px-2 py-0.5 rounded-full bg-besege-violet text-white text-[10px] font-semibold">
+                04. Convergencia
+              </span>
+            </div>
+          </div>
 
-          <motion.div
-            style={{ opacity: stageOpacity2 }}
-            className="absolute flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 border border-besege-black/10 shadow-sm"
-          >
-            <span className="w-2 h-2 rounded-full bg-besege-violet" />
-            <span>Fase 02: Los drapeados de seda suspendidos sin forzar silueta</span>
-          </motion.div>
-
-          <motion.div
-            style={{ opacity: stageOpacity3 }}
-            className="absolute flex items-center gap-2 px-4 py-2 rounded-full bg-besege-black text-white shadow-sm"
-          >
-            <span className="w-2 h-2 rounded-full bg-besege-gold animate-ping" />
-            <span>Fase 03: Las cadenas de orfebrería como articulaciones de luz</span>
-          </motion.div>
-
-          <motion.div
-            style={{ opacity: stageOpacity4 }}
-            className="absolute flex items-center gap-2 px-4 py-2 rounded-full bg-besege-violet text-white shadow-md"
-          >
-            <Sparkles size={13} />
-            <span>Fase 04: La escultura viva completa en armonía orgánica</span>
-          </motion.div>
+          <div className="flex items-center gap-2">
+            <span>Desliza para unir o separar las capas</span>
+          </div>
         </div>
       </div>
     </div>

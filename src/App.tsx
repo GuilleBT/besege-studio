@@ -72,7 +72,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-besege-canvas text-besege-black selection:bg-besege-violet selection:text-white overflow-x-hidden">
+    <div className="relative min-h-screen bg-besege-canvas text-besege-black selection:bg-besege-violet selection:text-white overflow-x-clip">
       {/* Three.js Ethereal Spores & Particle Field in 3D Space */}
       <DimensionalBackground />
 

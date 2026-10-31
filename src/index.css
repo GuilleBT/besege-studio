@@ -10,10 +10,13 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html, body {
+    overflow-x: clip;
+  }
+
   body {
     background-color: #FAF7EE;
     color: #121214;
-    overflow-x: hidden;
   }
 
   ::selection {
