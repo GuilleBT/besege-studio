@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
+import { AnimatePresence } from 'framer-motion';
 import { CustomCursor } from './components/CustomCursor';
 import { DimensionalBackground } from './components/DimensionalBackground';
-import { PrehomeIntro } from './components/PrehomeIntro';
+import { CuratorialCover } from './components/CuratorialCover';
 import { MuseumNavbar } from './components/MuseumNavbar';
 import { PortalEntrance } from './components/PortalEntrance';
 import { ManifestoSection } from './components/ManifestoSection';
@@ -16,19 +17,26 @@ import { MuseumFooter } from './components/MuseumFooter';
 import { Artwork } from './data/museumData';
 
 export const App: React.FC = () => {
-  const [showPrehome, setShowPrehome] = useState<boolean>(true);
+  const [showCover, setShowCover] = useState<boolean>(true);
   const [activeRoom, setActiveRoom] = useState<string>('atrio');
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [inquirySubject, setInquirySubject] = useState<string>('');
+  const lenisRef = useRef<Lenis | null>(null);
 
   // Setup silky smooth Lenis scroll for museum exhibition momentum
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.3,
+      duration: 1.25,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       smoothWheel: true,
     });
+    lenisRef.current = lenis;
+
+    // If cover is active on initial load, stop scroll to avoid desync
+    if (showCover) {
+      lenis.stop();
+    }
 
     function raf(time: number) {
       lenis.raf(time);
@@ -41,6 +49,16 @@ export const App: React.FC = () => {
       lenis.destroy();
     };
   }, []);
+
+  // When opening the exhibition from the cover:
+  const handleOpenExhibition = () => {
+    window.scrollTo(0, 0);
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+      lenisRef.current.start();
+    }
+    setShowCover(false);
+  };
 
   // Intersection Observer to detect current active museum room
   useEffect(() => {
@@ -63,7 +81,11 @@ export const App: React.FC = () => {
   const scrollToRoom = (roomId: string) => {
     const element = document.getElementById(roomId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(element, { duration: 1.4 });
+      } else {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -75,16 +97,18 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-besege-canvas text-besege-black selection:bg-besege-violet selection:text-white overflow-x-clip">
+      {/* Curatorial Monograph Cover (Locked at Y=0, zero scroll leak, intuitive entry) */}
+      <AnimatePresence>
+        {showCover && (
+          <CuratorialCover onEnter={handleOpenExhibition} />
+        )}
+      </AnimatePresence>
+
       {/* Three.js Ethereal Spores & Particle Field in 3D Space */}
       <DimensionalBackground />
 
       {/* Paper Grain Overlay for physical museum texture */}
       <div className="paper-grain" />
-
-      {/* Spectacular Pre-Home Cinematic Intro */}
-      {showPrehome && (
-        <PrehomeIntro onEnter={() => setShowPrehome(false)} />
-      )}
 
       {/* High-Agency Custom Magnetic Cursor */}
       <CustomCursor />
