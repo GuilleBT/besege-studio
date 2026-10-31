@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Lenis from 'lenis';
 import { CustomCursor } from './components/CustomCursor';
+import { DimensionalBackground } from './components/DimensionalBackground';
 import { MuseumNavbar } from './components/MuseumNavbar';
-import { AtriumHero } from './components/AtriumHero';
+import { PortalEntrance } from './components/PortalEntrance';
 import { ManifestoSection } from './components/ManifestoSection';
-import { SculpturesGallery } from './components/SculpturesGallery';
+import { AnatomyExplosion } from './components/AnatomyExplosion';
+import { KineticMarquee } from './components/KineticMarquee';
+import { HorizontalRunway } from './components/HorizontalRunway';
 import { LaboratorySection } from './components/LaboratorySection';
 import { PrivateVisitsSection } from './components/PrivateVisitsSection';
 import { ArtworkModal } from './components/ArtworkModal';
@@ -19,7 +22,7 @@ export const App: React.FC = () => {
   // Setup silky smooth Lenis scroll for museum exhibition momentum
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.3,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       smoothWheel: true,
@@ -48,7 +51,7 @@ export const App: React.FC = () => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.25 }
     );
 
     sections.forEach((s) => observer.observe(s));
@@ -69,7 +72,10 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-besege-canvas text-besege-black selection:bg-besege-violet selection:text-white">
+    <div className="relative min-h-screen bg-besege-canvas text-besege-black selection:bg-besege-violet selection:text-white overflow-x-hidden">
+      {/* Three.js Ethereal Spores & Particle Field in 3D Space */}
+      <DimensionalBackground />
+
       {/* Paper Grain Overlay for physical museum texture */}
       <div className="paper-grain" />
 
@@ -82,28 +88,40 @@ export const App: React.FC = () => {
         onNavigate={scrollToRoom}
       />
 
-      {/* Museum Exhibition Rooms */}
-      <main>
-        {/* Sala 00: Atrio de Entrada */}
-        <AtriumHero onEnter={() => scrollToRoom('manifiesto')} />
+      {/* Main Museum Dimensional Journey */}
+      <main className="relative z-10">
+        {/* Sala 00: 3D Dimensional Portal & Atrium Zoom */}
+        <PortalEntrance onEnter={() => scrollToRoom('manifiesto')} />
 
         {/* Sala 01: El Manifiesto & Tesis UDIT */}
         <ManifestoSection />
 
-        {/* Sala 02: Esculturas Textiles & Joyería Corporal */}
-        <SculpturesGallery onSelectArtwork={(art) => setSelectedArtwork(art)} />
+        {/* 3D Scroll Scrubbing: Anatomy Layer Explosion (Piel, Seda, Joyas) */}
+        <AnatomyExplosion />
+
+        {/* Kinetic Velocity Marquee Banner */}
+        <KineticMarquee text="FOR TODAY'S GODDESSES, MERMAIDS AND FAIRIES · BESEGÉ STUDIO · EL CUERPO COMO LIENZO · BÁRBARA SÁNCHEZ-GUERRERO · " />
+
+        {/* Sala 02: Horizontal Pinned Dimensional Runway with Velocity Skew */}
+        <HorizontalRunway onSelectArtwork={(art) => setSelectedArtwork(art)} />
+
+        {/* Second Kinetic Marquee (Reverse Direction) */}
+        <KineticMarquee
+          reverse
+          text="ORFEBRERÍA TEXTIL · COLECCIÓN FIN DE GRADO UDIT · ALTA COSTURA MADRID · NO TAPAR EL CUERPO SINO DECORARLO · "
+        />
 
         {/* Sala 03: Laboratorio de Materia & Dumps de Instagram */}
         <LaboratorySection />
 
-        {/* Sala 04: Cita Privada & Libro de Registro */}
+        {/* Sala 04: Cita Privada & Libro de Registro Curatorial */}
         <PrivateVisitsSection initialSubject={inquirySubject} />
       </main>
 
       {/* Curatorial Footer */}
       <MuseumFooter onBackToTop={() => scrollToRoom('atrio')} />
 
-      {/* Fullscreen Artwork Modal with Macro-Inspection */}
+      {/* Fullscreen Artwork Modal with 2x Macro-Inspection */}
       <ArtworkModal
         artwork={selectedArtwork}
         onClose={() => setSelectedArtwork(null)}
